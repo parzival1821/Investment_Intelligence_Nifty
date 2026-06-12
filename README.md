@@ -4,6 +4,13 @@ AI-powered investment intelligence dashboard for historical NIFTY-50 market data
 
 > Educational project only. This is not financial advice and does not use live market data.
 
+## Author
+
+- **Name:** Akshat
+- **Enrollment Number:** 23115007
+- **Branch:** Electrical Engineering
+- **Year:** Completed 3rd year, entering 4th year
+
 ## Features
 
 - Market overview across NIFTY-50 constituents

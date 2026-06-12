@@ -3,7 +3,9 @@
 ## Slide 1: Title
 
 NIFTY-50 Investment Intelligence Platform  
-Akshat - Solo Project
+Akshat - 23115007  
+Electrical Engineering, completed 3rd year, entering 4th year  
+Solo Project
 
 ## Slide 2: Problem Overview
 

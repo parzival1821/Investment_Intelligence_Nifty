@@ -1,6 +1,9 @@
 # Technical Report: NIFTY-50 Investment Intelligence
 
 **Participant:** Akshat  
+**Enrollment Number:** 23115007  
+**Branch:** Electrical Engineering  
+**Year:** Completed 3rd year, entering 4th year  
 **Problem Statement:** Data-Driven Investment Intelligence Using NIFTY-50 Market Data  
 **Submission Type:** AI-powered investment intelligence dashboard using organizer-provided datasets  
 **Prototype:** Streamlit dashboard with analytics, prediction, portfolio construction, and explainability
