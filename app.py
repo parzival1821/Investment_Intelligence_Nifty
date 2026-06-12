@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from html import escape
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -30,19 +32,51 @@ st.markdown(
     <style>
         .block-container {padding-top: 1.4rem; padding-bottom: 2rem;}
         div[data-testid="stMetric"] {
-            border: 1px solid #d9dee8;
+            border: 1px solid rgba(160, 174, 192, 0.32);
             border-radius: 8px;
             padding: 0.75rem 0.85rem;
-            background: #fbfcfe;
+            background: rgba(255, 255, 255, 0.035);
+            color: inherit;
         }
         div[data-testid="stMetricLabel"] {font-size: 0.82rem;}
+        div[data-testid="stMetricValue"] {font-size: 1.35rem;}
         h1, h2, h3 {letter-spacing: 0;}
         .caption-box {
-            border-left: 4px solid #2a6f97;
+            border-left: 4px solid #5dade2;
             padding: 0.6rem 0.8rem;
-            background: #f5f8fb;
+            background: rgba(93, 173, 226, 0.12);
             border-radius: 4px;
             margin-bottom: 0.8rem;
+        }
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+        }
+        .portfolio-table th, .portfolio-table td {
+            border-bottom: 1px solid rgba(160, 174, 192, 0.24);
+            padding: 0.62rem 0.55rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .portfolio-table th {
+            color: #dce7f3;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .weight-bar {
+            min-width: 92px;
+        }
+        .weight-track {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(125, 211, 252, 0.18);
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .weight-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: #7dd3fc;
         }
     </style>
     """,
@@ -148,7 +182,14 @@ with st.sidebar:
         index=symbols.index(default_symbol),
         format_func=lambda symbol: f"{symbol} - {metadata_map.get(symbol, symbol)}",
     )
-    profile = st.selectbox("Investor profile", list(PROFILE_CONFIG), index=1)
+    profile = st.segmented_control(
+        "Investor profile",
+        list(PROFILE_CONFIG),
+        default="Balanced",
+        width="stretch",
+    )
+    if profile is None:
+        profile = "Balanced"
     min_date = prices["Date"].min().date()
     max_date = prices["Date"].max().date()
     start_date, end_date = st.date_input(
@@ -224,25 +265,27 @@ with overview_tab:
         bar.update_layout(height=430, margin=dict(l=20, r=20, t=45, b=20), showlegend=False)
         st.plotly_chart(bar, width="stretch")
 
+    overview_display = risk_table.sort_values("sharpe_ratio", ascending=False).head(12)[
+        [
+            "Symbol",
+            "Company",
+            "Industry",
+            "annualized_return",
+            "annualized_volatility",
+            "sharpe_ratio",
+            "max_drawdown",
+        ]
+    ].copy()
+    for col in ["annualized_return", "annualized_volatility", "max_drawdown"]:
+        overview_display[col] = overview_display[col] * 100
     st.dataframe(
-        risk_table.sort_values("sharpe_ratio", ascending=False)
-        .head(12)[
-            [
-                "Symbol",
-                "Company",
-                "Industry",
-                "annualized_return",
-                "annualized_volatility",
-                "sharpe_ratio",
-                "max_drawdown",
-            ]
-        ],
+        overview_display,
         width="stretch",
         column_config={
-            "annualized_return": st.column_config.NumberColumn("Annual Return", format="%.2f"),
-            "annualized_volatility": st.column_config.NumberColumn("Volatility", format="%.2f"),
+            "annualized_return": st.column_config.NumberColumn("Annual Return", format="%.1f%%"),
+            "annualized_volatility": st.column_config.NumberColumn("Volatility", format="%.1f%%"),
             "sharpe_ratio": st.column_config.NumberColumn("Sharpe", format="%.2f"),
-            "max_drawdown": st.column_config.NumberColumn("Max Drawdown", format="%.2f"),
+            "max_drawdown": st.column_config.NumberColumn("Max Drawdown", format="%.1f%%"),
         },
         hide_index=True,
     )
@@ -316,14 +359,18 @@ with predictor_tab:
         imp_fig.update_layout(height=350, margin=dict(l=20, r=20, t=45, b=20))
         st.plotly_chart(imp_fig, width="stretch")
     with right:
+        prediction_display = prediction.predictions.tail(12).sort_values("Date", ascending=False).copy()
+        prediction_display["Date"] = prediction_display["Date"].dt.strftime("%Y-%m-%d")
+        for col in ["Target Next Return", "Predicted Next Return", "Baseline Prediction"]:
+            prediction_display[col] = prediction_display[col] * 100
         st.dataframe(
-            prediction.predictions.tail(12).sort_values("Date", ascending=False),
+            prediction_display,
             width="stretch",
             hide_index=True,
             column_config={
-                "Target Next Return": st.column_config.NumberColumn("Actual Return", format="%.4f"),
-                "Predicted Next Return": st.column_config.NumberColumn("Predicted Return", format="%.4f"),
-                "Baseline Prediction": st.column_config.NumberColumn("Baseline", format="%.4f"),
+                "Target Next Return": st.column_config.NumberColumn("Actual Return", format="%.2f%%"),
+                "Predicted Next Return": st.column_config.NumberColumn("Predicted Return", format="%.2f%%"),
+                "Baseline Prediction": st.column_config.NumberColumn("Baseline", format="%.2f%%"),
             },
         )
 
@@ -347,36 +394,38 @@ with portfolio_tab:
         pct(float((portfolio["weight"] * portfolio["annualized_volatility"]).sum())),
     )
 
-    weights = px.bar(
-        portfolio.sort_values("weight"),
-        x="weight",
-        y="Symbol",
-        color="Industry",
-        orientation="h",
-        hover_name="Company",
-        title="Portfolio allocation",
-        labels={"weight": "Weight"},
-    )
-    weights.update_layout(height=390, margin=dict(l=20, r=20, t=45, b=20), xaxis_tickformat=".0%")
-    st.plotly_chart(weights, width="stretch")
-
     portfolio_display = portfolio.copy()
-    portfolio_display["weight"] = portfolio_display["weight"] * 100
-    st.dataframe(
-        portfolio_display,
-        width="stretch",
-        hide_index=True,
-        column_config={
-            "weight": st.column_config.ProgressColumn("Weight", format="%.1f%%", min_value=0, max_value=100),
-            "annualized_return": st.column_config.NumberColumn("Annual Return", format="%.2f"),
-            "annualized_volatility": st.column_config.NumberColumn("Volatility", format="%.2f"),
-            "sharpe_ratio": st.column_config.NumberColumn("Sharpe", format="%.2f"),
-            "sortino_ratio": st.column_config.NumberColumn("Sortino", format="%.2f"),
-            "max_drawdown": st.column_config.NumberColumn("Max Drawdown", format="%.2f"),
-            "momentum_20d": st.column_config.NumberColumn("20D Momentum", format="%.2f"),
-            "score": st.column_config.NumberColumn("Score", format="%.2f"),
-        },
+    st.subheader("Allocation")
+    for col in ["weight", "annualized_return", "annualized_volatility", "max_drawdown", "momentum_20d"]:
+        portfolio_display[col] = portfolio_display[col] * 100
+    rows = []
+    for _, row in portfolio_display.iterrows():
+        rows.append(
+            "<tr>"
+            f"<td><strong>{escape(row['Symbol'])}</strong><br>{escape(row['Industry'])}</td>"
+            f"<td>{escape(row['Company'])}</td>"
+            "<td class='weight-bar'>"
+            f"{row['weight']:.1f}%"
+            "<div class='weight-track'>"
+            f"<div class='weight-fill' style='width:{max(min(row['weight'], 100), 0):.1f}%'></div>"
+            "</div>"
+            "</td>"
+            f"<td>{row['annualized_return']:.1f}%</td>"
+            f"<td>{row['annualized_volatility']:.1f}%</td>"
+            f"<td>{row['sharpe_ratio']:.2f}</td>"
+            f"<td>{row['max_drawdown']:.1f}%</td>"
+            f"<td>{escape(row['Explanation'])}</td>"
+            "</tr>"
+        )
+    table_html = (
+        "<table class='portfolio-table'>"
+        "<thead><tr>"
+        "<th>Stock</th><th>Company</th><th>Weight</th><th>Annual Return</th>"
+        "<th>Volatility</th><th>Sharpe</th><th>Max Drawdown</th><th>Explanation</th>"
+        "</tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody></table>"
     )
+    st.markdown(table_html, unsafe_allow_html=True)
 
 with methodology_tab:
     st.subheader("Methodology")
