@@ -208,7 +208,7 @@ with overview_tab:
             title="Risk-return map",
         )
         scatter.update_layout(height=430, margin=dict(l=20, r=20, t=45, b=20))
-        st.plotly_chart(scatter, use_container_width=True)
+        st.plotly_chart(scatter, width="stretch")
     with right:
         industry_counts = metadata["Industry"].value_counts().reset_index()
         industry_counts.columns = ["Industry", "Stocks"]
@@ -222,7 +222,7 @@ with overview_tab:
             color_continuous_scale="Teal",
         )
         bar.update_layout(height=430, margin=dict(l=20, r=20, t=45, b=20), showlegend=False)
-        st.plotly_chart(bar, use_container_width=True)
+        st.plotly_chart(bar, width="stretch")
 
     st.dataframe(
         risk_table.sort_values("sharpe_ratio", ascending=False)
@@ -237,7 +237,7 @@ with overview_tab:
                 "max_drawdown",
             ]
         ],
-        use_container_width=True,
+        width="stretch",
         column_config={
             "annualized_return": st.column_config.NumberColumn("Annual Return", format="%.2f"),
             "annualized_volatility": st.column_config.NumberColumn("Volatility", format="%.2f"),
@@ -263,14 +263,14 @@ with stock_tab:
     cols[4].metric("20D Volatility", pct(latest["Volatility20"] * (252**0.5)))
     metric_row(stock_metrics)
 
-    st.plotly_chart(price_chart(stock, selected_symbol), use_container_width=True)
+    st.plotly_chart(price_chart(stock, selected_symbol), width="stretch")
     volume = px.bar(stock, x="Date", y="Volume", title="Volume")
     volume.update_layout(height=240, margin=dict(l=20, r=20, t=45, b=20))
-    st.plotly_chart(volume, use_container_width=True)
+    st.plotly_chart(volume, width="stretch")
 
     left, right = st.columns(2)
-    left.plotly_chart(indicator_chart(stock), use_container_width=True)
-    right.plotly_chart(macd_chart(stock), use_container_width=True)
+    left.plotly_chart(indicator_chart(stock), width="stretch")
+    right.plotly_chart(macd_chart(stock), width="stretch")
 
 with predictor_tab:
     st.subheader("Next-Day Return Predictor")
@@ -301,7 +301,7 @@ with predictor_tab:
         )
     )
     fig.update_layout(height=390, margin=dict(l=20, r=20, t=35, b=20), yaxis_tickformat=".1%")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     left, right = st.columns([0.95, 1.05])
     with left:
@@ -314,11 +314,11 @@ with predictor_tab:
             title="Top feature importance",
         )
         imp_fig.update_layout(height=350, margin=dict(l=20, r=20, t=45, b=20))
-        st.plotly_chart(imp_fig, use_container_width=True)
+        st.plotly_chart(imp_fig, width="stretch")
     with right:
         st.dataframe(
             prediction.predictions.tail(12).sort_values("Date", ascending=False),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Target Next Return": st.column_config.NumberColumn("Actual Return", format="%.4f"),
@@ -358,13 +358,13 @@ with portfolio_tab:
         labels={"weight": "Weight"},
     )
     weights.update_layout(height=390, margin=dict(l=20, r=20, t=45, b=20), xaxis_tickformat=".0%")
-    st.plotly_chart(weights, use_container_width=True)
+    st.plotly_chart(weights, width="stretch")
 
     portfolio_display = portfolio.copy()
     portfolio_display["weight"] = portfolio_display["weight"] * 100
     st.dataframe(
         portfolio_display,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "weight": st.column_config.ProgressColumn("Weight", format="%.1f%%", min_value=0, max_value=100),
