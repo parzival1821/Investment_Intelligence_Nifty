@@ -18,11 +18,13 @@ AI-powered investment intelligence dashboard for historical NIFTY-50 market data
 
 ```text
 app.py                  # Streamlit dashboard
+requirements.txt        # Dependency configuration
 nifty_intel/data.py     # CSV loading, validation, metadata joins
 nifty_intel/indicators.py
 nifty_intel/risk.py
 nifty_intel/prediction.py
 nifty_intel/portfolio.py
+models/README.md        # Model artifact policy
 scripts/smoke_test.py   # End-to-end sanity check
 REPORT.md               # Technical report source
 REPORT.pdf              # Submission-ready technical report
@@ -84,6 +86,8 @@ The prototype focuses on decision support rather than live trading. It computes 
 
 - No live market data or financial APIs are used.
 - All computations come from the local CSV files listed above.
+- No news, sentiment, proprietary financial data, or alternative market datasets are used.
+- Prediction models are trained at runtime from the provided local data, so no stale serialized model artifact is required.
 - The train/test split is chronological to avoid future leakage.
 - The smoke test verifies data loading, feature engineering, prediction, and portfolio construction.
 

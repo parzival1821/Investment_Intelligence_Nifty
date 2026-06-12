@@ -48,6 +48,8 @@ Reported metrics:
 
 The app also compares the model to a naive baseline that uses the previous day's return as the next-day prediction. If scikit-learn is unavailable, a NumPy linear regression fallback keeps the project reproducible.
 
+The model is trained at runtime from the provided local CSV files. No serialized model artifact is required because the selected stock and analysis window can change inside the dashboard, and runtime training avoids stale model files.
+
 ## 5. Risk Assessment Methodology
 
 Risk analytics are computed from daily returns:
@@ -99,6 +101,7 @@ Limitations:
 
 - Dataset ends in April 2021.
 - No live prices, financial APIs, news, sentiment, or macroeconomic signals are used.
+- No proprietary financial data or alternative market datasets are used.
 - Short-horizon return prediction is noisy and should not be interpreted as financial advice.
 
 Future improvements:
