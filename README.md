@@ -24,7 +24,8 @@ nifty_intel/risk.py
 nifty_intel/prediction.py
 nifty_intel/portfolio.py
 scripts/smoke_test.py   # End-to-end sanity check
-REPORT.md               # Technical report draft
+REPORT.md               # Technical report source
+REPORT.pdf              # Submission-ready technical report
 PRESENTATION_OUTLINE.md # 8-slide submission outline
 ```
 
