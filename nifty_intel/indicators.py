@@ -49,9 +49,8 @@ def add_technical_indicators(stock: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_indicators_by_symbol(prices: pd.DataFrame) -> pd.DataFrame:
-    return (
-        prices.groupby("Symbol", group_keys=False)
-        .apply(add_technical_indicators, include_groups=True)
-        .reset_index(drop=True)
-    )
-
+    frames = [
+        add_technical_indicators(group)
+        for _, group in prices.groupby("Symbol", sort=False)
+    ]
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
