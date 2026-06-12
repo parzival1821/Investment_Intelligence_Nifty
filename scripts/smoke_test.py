@@ -15,6 +15,7 @@ from nifty_intel.data import (
     load_price_data,
 )
 from nifty_intel.indicators import add_technical_indicators
+from nifty_intel.prediction import train_predictor
 from nifty_intel.risk import risk_summary
 
 
@@ -45,9 +46,14 @@ def main() -> None:
     if snapshot.empty or "Company" not in snapshot.columns:
         raise AssertionError("Latest market snapshot did not join metadata")
 
+    prediction = train_predictor(stock)
+    if prediction.predictions.empty or "rmse" not in prediction.metrics:
+        raise AssertionError("Prediction engine did not return expected output")
+
     print(
         f"Smoke test passed: {len(prices):,} rows, {len(symbols)} symbols, "
-        f"sample={sample_symbol}, sharpe={metrics['sharpe_ratio']:.2f}"
+        f"sample={sample_symbol}, sharpe={metrics['sharpe_ratio']:.2f}, "
+        f"model={prediction.model_name}"
     )
 
 
